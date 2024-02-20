@@ -23,17 +23,19 @@
 
 #pragma once
 
-#include <json/json.h>
+#include <json/json.hpp>
 
 #include <string>
 #include <string_view>
 #include <optional>
 
+using Json = nlohmann::json;
+
 namespace solidity::util
 {
 
 /// Removes members with null value recursively from (@a _json).
-Json::Value removeNullMembers(Json::Value _json);
+Json removeNullMembers(Json _json);
 
 /// JSON printing format.
 struct JsonFormat
@@ -54,27 +56,27 @@ struct JsonFormat
 };
 
 /// Serialise the JSON object (@a _input) with indentation
-std::string jsonPrettyPrint(Json::Value const& _input);
+std::string jsonPrettyPrint(Json const& _input);
 
 /// Serialise the JSON object (@a _input) without indentation
-std::string jsonCompactPrint(Json::Value const& _input);
+std::string jsonCompactPrint(Json const& _input);
 
 /// Serialise the JSON object (@a _input) using specified format (@a _format)
-std::string jsonPrint(Json::Value const& _input, JsonFormat const& _format);
+std::string jsonPrint(Json const& _input, JsonFormat const& _format);
 
 /// Parse a JSON string (@a _input) with enabled strict-mode and writes resulting JSON object to (@a _json)
 /// \param _input JSON input string
 /// \param _json [out] resulting JSON object
 /// \param _errs [out] Formatted error messages
 /// \return \c true if the document was successfully parsed, \c false if an error occurred.
-bool jsonParseStrict(std::string const& _input, Json::Value& _json, std::string* _errs = nullptr);
+bool jsonParseStrict(std::string const& _input, Json& _json, std::string* _errs = nullptr);
 
 /// Retrieves the value specified by @p _jsonPath by from a series of nested JSON dictionaries.
 /// @param _jsonPath A dot-separated series of dictionary keys.
 /// @param _node The node representing the start of the path.
 /// @returns The value of the last key on the path. @a nullptr if any node on the path descends
 /// into something that is not a dictionary or the key is not present.
-std::optional<Json::Value> jsonValueByPath(Json::Value const& _node, std::string_view _jsonPath);
+std::optional<Json> jsonValueByPath(Json const& _node, std::string_view _jsonPath);
 
 namespace detail
 {
@@ -82,60 +84,65 @@ namespace detail
 template<typename T>
 struct helper;
 
-template<typename T, bool(Json::Value::*checkMember)() const, T(Json::Value::*convertMember)() const>
+template<typename T, bool(Json::*checkMember)() const, T(Json::*convertMember)() const>
 struct helper_impl
 {
-	static bool isOfType(Json::Value const& _input)
+	static bool isOfType(Json const& _input)
 	{
 		return (_input.*checkMember)();
 	}
-	static T get(Json::Value const& _input)
+	static T get(Json const& _input)
 	{
 		return (_input.*convertMember)();
 	}
-	static T getOrDefault(Json::Value const& _input, T _default = {})
+	static T getOrDefault(Json const& _input, std::string const& _name, T _default = {})
 	{
 		T result = _default;
-		if (isOfType(_input))
-			result = (_input.*convertMember)();
+		if (_input.contains(_name))
+			if (isOfType(_input[_name]))
+				result = (_input[_name].*convertMember)();
 		return result;
 	}
 };
 
-template<> struct helper<float>: helper_impl<float, &Json::Value::isDouble, &Json::Value::asFloat> {};
-template<> struct helper<double>: helper_impl<double, &Json::Value::isDouble, &Json::Value::asDouble> {};
-template<> struct helper<std::string>: helper_impl<std::string, &Json::Value::isString, &Json::Value::asString> {};
-template<> struct helper<Json::Int>: helper_impl<Json::Int, &Json::Value::isInt, &Json::Value::asInt> {};
-template<> struct helper<Json::Int64>: helper_impl<Json::Int64, &Json::Value::isInt64, &Json::Value::asInt64> {};
-template<> struct helper<Json::UInt>: helper_impl<Json::UInt, &Json::Value::isUInt, &Json::Value::asUInt> {};
-template<> struct helper<Json::UInt64>: helper_impl<Json::UInt64, &Json::Value::isUInt64, &Json::Value::asUInt64> {};
+template<> struct helper<float>: helper_impl<float, &Json::is_number_float, &Json::get<float>> {};
+template<> struct helper<double>: helper_impl<double, &Json::is_number_float, &Json::get<double>> {};
+template<> struct helper<std::string>: helper_impl<std::string, &Json::is_string, &Json::get<std::string>> {};
+template<> struct helper<int8_t>: helper_impl<int8_t, &Json::is_number_integer, &Json::get<int8_t>> {};
+template<> struct helper<int16_t>: helper_impl<int16_t, &Json::is_number_integer, &Json::get<int16_t>> {};
+template<> struct helper<int32_t>: helper_impl<int32_t, &Json::is_number_integer, &Json::get<int32_t>> {};
+template<> struct helper<int64_t>: helper_impl<int64_t, &Json::is_number_integer, &Json::get<int64_t>> {};
+template<> struct helper<uint8_t>: helper_impl<uint8_t, &Json::is_number_unsigned, &Json::get<uint8_t>> {};
+template<> struct helper<uint16_t>: helper_impl<uint16_t, &Json::is_number_unsigned, &Json::get<uint16_t>> {};
+template<> struct helper<uint32_t>: helper_impl<uint32_t, &Json::is_number_unsigned, &Json::get<uint32_t>> {};
+template<> struct helper<uint64_t>: helper_impl<uint64_t, &Json::is_number_unsigned, &Json::get<uint64_t>> {};
 
 } // namespace detail
 
 template<typename T>
-bool isOfType(Json::Value const& _input)
+bool isOfType(Json const& _input)
 {
 	return detail::helper<T>::isOfType(_input);
 }
 
 template<typename T>
-bool isOfTypeIfExists(Json::Value const& _input, std::string const& _name)
+bool isOfTypeIfExists(Json const& _input, std::string const& _name)
 {
-	if (_input.isMember(_name))
+	if (_input.contains(_name))
 		return isOfType<T>(_input[_name]);
 	return true;
 }
 
 template<typename T>
-T get(Json::Value const& _input)
+T get(Json const& _input)
 {
 	return detail::helper<T>::get(_input);
 }
 
 template<typename T>
-T getOrDefault(Json::Value const& _input, T _default = {})
+T getOrDefault(Json const& _input, std::string const& _name, T _default = {})
 {
-	return detail::helper<T>::getOrDefault(_input, _default);
+	return detail::helper<T>::getOrDefault(_input, _name, _default);
 }
 
 } // namespace solidity::util

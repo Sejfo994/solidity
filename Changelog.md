@@ -11,6 +11,8 @@ Bugfixes:
  * Assembler: Prevent incorrect calculation of tag sizes.
  * SMTChecker: Fix internal error caused by not respecting the sign of an integer type when constructing zero-value SMT expressions.
 
+Build System:
+ * Replace internal JSON library jsoncpp with nlohmann::json.
 
 ### 0.8.24 (2024-01-25)
 
