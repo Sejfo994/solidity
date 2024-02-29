@@ -81,8 +81,8 @@ an example of this in the first two lines of the ``claimPayment()``
 function of the full contract at the end of this section.
 
 Furthermore, instead of destroying the contract by calling ``selfdestruct``,
-which is currently deprecated, we will instead disable the contract's functionalities by freezing it,
-resulting in the reverting of any call after being frozen.
+which is currently deprecated, we will disable the contract's functionalities by freezing it,
+resulting in the reversion of any call after it being frozen.
 
 Packing arguments
 -----------------
