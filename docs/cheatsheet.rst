@@ -118,7 +118,7 @@ Contract-related
 
 - ``this`` (current contract's type): the current contract, explicitly convertible to ``address`` or ``address payable``
 - ``super``: a contract one level higher in the inheritance hierarchy
-- ``selfdestruct(address payable recipient)``: starting from ``EVM >= Cancun`` it will **only** sends all Ether in the account to the given recipient, except when ``selfdestruct`` is called in the same transaction the contract was created in; in that case, the behavior pre-Cancun hardfork is preserved (i.e., ``EVM <= Shanghai``), and ``selfdestruct`` will destroy the current contract, deleting any data, including storage keys, code, or the account itself.
+- ``selfdestruct(address payable recipient)``: starting from ``EVM >= Cancun`` it will **only** send all Ether in the account to the given recipient, except when ``selfdestruct`` is called in the same transaction the contract was created in; in that case, the behavior pre-Cancun hardfork is preserved (i.e., ``EVM <= Shanghai``), and ``selfdestruct`` will destroy the current contract, deleting any data, including storage keys, code and the account itself.
 
 .. index:: type;name, type;creationCode, type;runtimeCode, type;interfaceId, type;min, type;max
 
