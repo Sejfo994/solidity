@@ -311,7 +311,7 @@ std::vector<YulString> AsmAnalyzer::operator()(FunctionCall const& _funCall)
 	std::vector<YulString> const* returnTypes = nullptr;
 	std::vector<std::optional<LiteralKind>> const* literalArguments = nullptr;
 
-	auto isTransientStorageWarning = [](std::shared_ptr<Error const> error) {
+	auto isTransientStorageWarning = [](std::shared_ptr<Error const> error) -> bool {
 		yulAssert(error.get(), "");
 		return error->errorId() == 2394_error;
 	};
