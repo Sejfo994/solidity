@@ -156,7 +156,7 @@ The full contract
         }
     }
 
-    contract Frozeable is Owned {
+    contract Freezable is Owned {
         bool private _frozen = false;
 
         modifier notFrozen() {
