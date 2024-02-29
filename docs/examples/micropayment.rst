@@ -332,7 +332,7 @@ Closing the Payment Channel
 When Bob is ready to receive his funds, it is time to
 close the payment channel by calling a ``close`` function on the smart contract.
 Closing the channel pays the recipient the Ether they are owed and
-deactivate the contract by freezing it, sending any remaining Ether back to Alice. To
+deactivates the contract by freezing it, sending any remaining Ether back to Alice. To
 close the channel, Bob needs to provide a message signed by Alice.
 
 The smart contract must verify that the message contains a valid signature from the sender.
