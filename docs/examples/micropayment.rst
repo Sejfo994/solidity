@@ -170,7 +170,7 @@ The full contract
         }
     }
 
-    contract ReceiverPays is Frozeable {
+    contract ReceiverPays is Freezable {
         mapping(uint256 => bool) usedNonces;
 
         constructor() payable {}
