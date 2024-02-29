@@ -273,7 +273,7 @@ The way around this is to use ``super``:
         }
     }
 
-If ``Base2`` calls a function of ``super``, it does not simply
+If ``Final`` calls a function of ``super``, it does not simply
 call this function on one of its base contracts.  Rather, it
 calls this function on the next base contract in the final
 inheritance graph, so it will call ``Base1.pause()`` (note that
