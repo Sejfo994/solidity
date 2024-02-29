@@ -41,6 +41,8 @@
 
 #include <fmt/format.h>
 
+#include <range/v3/algorithm/find_if.hpp>
+
 #include <memory>
 #include <functional>
 
@@ -309,6 +311,11 @@ std::vector<YulString> AsmAnalyzer::operator()(FunctionCall const& _funCall)
 	std::vector<YulString> const* returnTypes = nullptr;
 	std::vector<std::optional<LiteralKind>> const* literalArguments = nullptr;
 
+	auto isTransientStorageWarning = [](std::shared_ptr<Error const> error) {
+		yulAssert(error.get(), "");
+		return error->errorId() == 2394_error;
+	};
+
 	if (BuiltinFunction const* f = m_dialect.builtin(_funCall.functionName.name))
 	{
 		if (_funCall.functionName.name == "selfdestruct"_yulstring)
@@ -324,7 +331,8 @@ std::vector<YulString> AsmAnalyzer::operator()(FunctionCall const& _funCall)
 			);
 		else if (
 			m_evmVersion.supportsTransientStorage() &&
-			_funCall.functionName.name == "tstore"_yulstring
+			_funCall.functionName.name == "tstore"_yulstring &&
+			ranges::find_if(m_errorReporter.errors(), isTransientStorageWarning) == ranges::end(m_errorReporter.errors())
 		)
 			m_errorReporter.warning(
 				2394_error,

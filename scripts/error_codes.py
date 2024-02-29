@@ -378,7 +378,10 @@ def main(argv):
         [".h", ".cpp"]
     )
     source_id_to_file_names = find_ids_in_source_files(source_file_names)
-
+    # Transient storage warning which appears twice in the source code
+    # TODO: Remove if we decide the warning is not needed anymore
+    assert(len(source_id_to_file_names["2394"]) == 2)
+    source_id_to_file_names["2394"].pop()
     ok = True
     for error_id in sorted(source_id_to_file_names):
         if len(error_id) != 4:
